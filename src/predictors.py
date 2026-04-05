@@ -131,100 +131,104 @@ class UNIMLP_E2E(nn.Module):
     def apply_edges(self, edges):
         return {'h_edge': (edges.src['h'] + edges.dst['h']) / 2}
 
+    def _cross_agg(self, g, feat, o_r, i_r):
+        """Aggregate cross-level features (e.g. edge->node or node->edge) via graph message passing."""
+        if o_r == 'n' and i_r == 'e':
+            g.edata['_ch'] = feat
+            g.update_all(fn.copy_e('_ch', '_cm'), fn.mean('_cm', '_cn'))
+            return g.ndata['_cn']
+        elif o_r == 'e' and i_r == 'n':
+            g.ndata['_ch'] = feat
+            g.apply_edges(lambda edges: {'_ce': (edges.src['_ch'] + edges.dst['_ch']) / 2})
+            return g.edata['_ce']
+        elif o_r == 'g' and i_r == 'n':
+            g.ndata['_ch'] = feat
+            return dgl.mean_nodes(g, '_ch')
+        elif o_r == 'n' and i_r == 'g':
+            return dgl.broadcast_nodes(g, feat)
+        return None
+
+    def _agg_layer(self, g, layer, models_last, inner_state):
+        """Compute one aggregation layer, handling cross-level pairs via graph message passing."""
+        new_inner_state = {}
+        for o_r in self.output_route:
+            terms = []
+            for i_r in self.input_route:
+                w = layer[''.join((o_r, i_r))]
+                feat = models_last[i_r](inner_state[i_r])
+                if o_r == i_r:
+                    terms.append(w * feat)
+                else:
+                    cross = self._cross_agg(g, feat, o_r, i_r)
+                    if cross is not None:
+                        terms.append(w * cross)
+            new_inner_state[o_r] = reduce(torch.Tensor.add, terms) if terms else inner_state[o_r]
+        return new_inner_state
+
     def forward(self, g, h, sg_matrix, scen='train'):
         if not self.single_graph:
-            output_nums = []
             # deactivate the BN and dropout for encoder
             self.pretrain_model.eval()
-            # get embeddings
             with g.local_scope():
-                #### get all embeddings at first
                 inner_state = {}
-                # get node 
                 h = self.pretrain_model.embed(g, h)
-                # add graphs embd
                 if 'g' in self.output_route:
                     g.ndata['h'] = h
                     inner_state['g'] = dgl.mean_nodes(g, 'h')
                     g.ndata.pop('h')
-                # applying the pooling
                 if self.khop != 0:
                     h = SubgraphPooling(h, sg_matrix)
-                # add nodes embd
                 if 'n' in self.output_route:
                     inner_state['n'] = h
                 if 'e' in self.output_route:
-                    # cat the edge labels
                     g.ndata['h'] = h
                     g.apply_edges(self.apply_edges)
                     g.ndata.pop('h')
-                    # g.apply_edges(fn.u_add_v('h', 'h', 'h_edge'))
-                    # he = g.edata['h_edge']
                     inner_state['e'] = g.edata['h_edge']
 
                 for idx, layer in enumerate(self.layers):
-                    if isinstance(layer, nn.ParameterDict):# agg layers
-                        models_last = self.layers[idx-1] # model in last layer
-                        new_inner_state = {
-                            o_r: reduce(
-                                torch.Tensor.add,
-                                [
-                                    layer[''.join((o_r, i_r))] * models_last[i_r](inner_state[i_r]) for i_r in self.input_route
-                                ]
-                            )
-                            for o_r in self.output_route
-                        }
-                        inner_state.update(new_inner_state)
-                    elif idx ==0 or idx == 2:
-                        continue # ignore the model only layer, its just for calculation
-                    else: # final 2-layer MLP
+                    if isinstance(layer, nn.ParameterDict):
+                        models_last = self.layers[idx-1]
+                        inner_state.update(self._agg_layer(g, layer, models_last, inner_state))
+                    elif idx == 0 or idx == 2:
+                        continue
+                    else:
                         for o_r in self.output_route:
                             inner_state[o_r] = layer(inner_state[o_r])
                 return inner_state
         else:
-            output_nums = []
             self.pretrain_model.eval()
-            # get embeddings
+            # For single-graph, build full (unmasked) embeddings so that cross-level
+            # aggregation can use the complete graph structure, then mask at the end.
             with g.local_scope():
-                #### get all embeddings at first
                 inner_state = {}
-                # get node 
                 h = self.pretrain_model.embed(g, h)
-                # add graphs embd
                 if 'g' in self.output_route:
                     g.ndata['h'] = h
                     inner_state['g'] = dgl.mean_nodes(g, 'h')
                     g.ndata.pop('h')
-                # applying the pooling
                 if self.khop != 0:
                     h = SubgraphPooling(h, sg_matrix)
-                # add nodes embd
                 if 'n' in self.output_route:
-                    inner_state['n'] = h[self.mask_dicts['n'][scen],:]
+                    inner_state['n'] = h
                 if 'e' in self.output_route:
-                    # cat the edge labels
                     g.ndata['h'] = h
                     g.apply_edges(self.apply_edges)
                     g.ndata.pop('h')
-                    inner_state['e'] = g.edata['h_edge'][self.mask_dicts['e'][scen],:]
+                    inner_state['e'] = g.edata['h_edge']
 
                 for idx, layer in enumerate(self.layers):
-                    if isinstance(layer, nn.ParameterDict):# agg layers
-                        models_last = self.layers[idx-1] # model in last layer
-                        new_inner_state = {
-                            o_r: reduce(
-                                torch.Tensor.add,
-                                [
-                                    layer[''.join((o_r, i_r))] * models_last[i_r](inner_state[i_r]) for i_r in self.input_route
-                                ]
-                            )
-                            for o_r in self.output_route
-                        }
-                        inner_state.update(new_inner_state)
-                    elif idx ==0 or idx == 2:
-                        continue # ignore the model only layer, its just for calculation
-                    else: # final 2-layer MLP
+                    if isinstance(layer, nn.ParameterDict):
+                        models_last = self.layers[idx-1]
+                        inner_state.update(self._agg_layer(g, layer, models_last, inner_state))
+                    elif idx == 0 or idx == 2:
+                        continue
+                    else:
                         for o_r in self.output_route:
-                            # inner_state[o_r] = layer[o_r](inner_state[o_r])
                             inner_state[o_r] = layer(inner_state[o_r])
+
+                # Apply node/edge masks after all layers so cross-level agg works on the full graph
+                for k, masks in self.mask_dicts.items():
+                    if k in inner_state and scen in masks:
+                        inner_state[k] = inner_state[k][masks[scen], :]
                 return inner_state
