@@ -205,7 +205,9 @@ conda install -c conda-forge matplotlib=3.9.1 contourpy line_profiler=4.1.3 numb
 ```bash
 pip install -r requirements.txt
 ```
-
+```bash
+pip install torchdata==0.7.1 --extra-index-url https://download.pytorch.org/whl/cu118
+```
 > 由于 matplotlib 等包已在上一步通过 conda 安装，pip 会自动跳过已安装的包，只安装剩余的依赖。  
 > 安装过程较长（可能需要 5-20 分钟），请耐心等待。  
 > 安装过程中可能会看到一些黄色的警告信息（WARNING），这通常不影响使用，可以忽略。  
