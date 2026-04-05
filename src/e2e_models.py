@@ -39,6 +39,18 @@ class UnifyMLPDetector(object):
         self.input_route = [c for c in input_route] # ['n', 'e', 'g']
         self.output_route = [c for c in output_route] # ['n', 'e', 'g'] # the output of the model
 
+        # Validate that the dataset provides labels for every requested output route
+        if hasattr(dataset, 'labels_have'):
+            for r in self.output_route:
+                if r not in dataset.labels_have:
+                    overlap = ''.join(l for l in self.output_route if l in dataset.labels_have)
+                    suggestion = overlap if overlap else dataset.labels_have
+                    raise ValueError(
+                        f"cross_mode '{cross_mode}' requires '{r}'-level labels, but dataset "
+                        f"'{dataset.name}' only has labels for: '{dataset.labels_have}'. "
+                        f"Use a compatible cross_mode (e.g. '{input_route}2{suggestion}') for this dataset."
+                    )
+
         self.model = UNIMLP_E2E(
             in_feats=pretrain_model.in_dim,
             embed_dims=pretrain_model.embed_dim,
