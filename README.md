@@ -146,7 +146,7 @@ cd Desktop
 ### 2. 下载（克隆）项目代码
 
 ```bash
-git clone https://github.com/ACKADE/UniGAD.git
+git -c http.sslVerify=false clone https://github.com/ACKADE/UniGAD.git
 ```
 
 > 等待下载完成，命令行会显示进度。完成后桌面会出现一个名为 `UniGAD` 的文件夹。
