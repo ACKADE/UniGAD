@@ -380,6 +380,7 @@ mkdir ../results
 
 ```bash
 pip install numpy pandas scikit-learn scipy matplotlib tqdm networkx catboost
+pip install torch_geometric==2.5.3
 ```
 
 ---
