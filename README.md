@@ -232,6 +232,14 @@ mkdir ..\results
 
 ### 3. 运行 weibo 数据集上的实验（推荐新手从这里开始）
 
+**有 GPU（CUDA 运行，推荐）：**
+
+```bash
+python main.py --datasets 1 --pretrain_model graphmae --kernels bwgnn,gcn --lr 5e-4 --save_model --epoch_pretrain 50 --batch_size 1 --khop 1 --epoch_ft 300 --lr_ft 0.003 --final_mlp_layers 3 --cross_modes ne2ne,n2ne,e2ne --metric AUROC --trials 5 --device cuda
+```
+
+> 如果你有多块 GPU，可以用 `--device cuda:0`、`--device cuda:1` 等指定具体显卡编号。
+
 **没有 GPU（CPU 运行）：**
 
 ```bash
@@ -450,7 +458,7 @@ nvidia-smi
 python -c "import torch; print('GPU可用:', torch.cuda.is_available())"
 ```
 
-如果输出 `GPU可用: True`，恭喜你！程序会自动使用 GPU 加速。
+如果输出 `GPU可用: True`，说明 PyTorch 已正确识别你的 GPU。**运行实验时需要在命令中加上 `--device cuda` 才能使用 GPU**，示例见[第九步](#10-第九步运行实验)的"有 GPU（CUDA 运行）"部分。
 
 ---
 
@@ -460,8 +468,8 @@ python -c "import torch; print('GPU可用:', torch.cuda.is_available())"
 1. 打开 Anaconda Prompt
 2. conda activate unigad               # 激活环境
 3. cd Desktop\UniGAD\src               # 进入项目的 src 目录
-4. python main.py --datasets 1 --device cpu ...     # 运行实验（CPU）
-   python main.py --datasets 1 ...                  # 运行实验（GPU）
+4. python main.py --datasets 1 --device cuda ...     # 运行实验（GPU，推荐）
+   python main.py --datasets 1 --device cpu ...      # 运行实验（CPU）
 ```
 
 ---
