@@ -165,13 +165,16 @@ class UNIMLP_E2E(nn.Module):
                 for idx, layer in enumerate(self.layers):
                     if isinstance(layer, nn.ParameterDict):# agg layers
                         models_last = self.layers[idx-1] # model in last layer
-                        for o_r in self.output_route:
-                            inner_state[o_r] = reduce(
-                                torch.Tensor.add_,
+                        new_inner_state = {
+                            o_r: reduce(
+                                torch.Tensor.add,
                                 [
-                                    layer[''.join((o_r, i_r))] * models_last[i_r](inner_state[o_r]) for i_r in self.input_route
+                                    layer[''.join((o_r, i_r))] * models_last[i_r](inner_state[i_r]) for i_r in self.input_route
                                 ]
                             )
+                            for o_r in self.output_route
+                        }
+                        inner_state.update(new_inner_state)
                     elif idx ==0 or idx == 2:
                         continue # ignore the model only layer, its just for calculation
                     else: # final 2-layer MLP
@@ -208,13 +211,16 @@ class UNIMLP_E2E(nn.Module):
                 for idx, layer in enumerate(self.layers):
                     if isinstance(layer, nn.ParameterDict):# agg layers
                         models_last = self.layers[idx-1] # model in last layer
-                        for o_r in self.output_route:
-                            inner_state[o_r] = reduce(
-                                torch.Tensor.add_,
+                        new_inner_state = {
+                            o_r: reduce(
+                                torch.Tensor.add,
                                 [
-                                    layer[''.join((o_r, i_r))] * models_last[i_r](inner_state[o_r]) for i_r in self.input_route
+                                    layer[''.join((o_r, i_r))] * models_last[i_r](inner_state[i_r]) for i_r in self.input_route
                                 ]
                             )
+                            for o_r in self.output_route
+                        }
+                        inner_state.update(new_inner_state)
                     elif idx ==0 or idx == 2:
                         continue # ignore the model only layer, its just for calculation
                     else: # final 2-layer MLP

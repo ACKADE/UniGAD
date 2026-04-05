@@ -61,7 +61,7 @@ def pareto_fn(w_list, c_list, model, num_tasks, loss_list):
             if p.grad is not None:
                 grads[i].append(p.grad.view(-1))
             else:
-                grads[i].append(torch.zeros_like(p).cuda(non_blocking=True).view(-1))
+                grads[i].append(torch.zeros_like(p).view(-1))
 
         grads[i] = torch.cat(grads[i],dim=-1).cpu().numpy()
 
