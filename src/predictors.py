@@ -162,6 +162,8 @@ class UNIMLP_E2E(nn.Module):
                     cross = self._cross_agg(g, feat, o_r, i_r)
                     if cross is not None:
                         terms.append(w * cross)
+            # inner_state[o_r] is always set in the initial embedding block above,
+            # so the fallback (no supported cross-level path found) is always safe.
             new_inner_state[o_r] = reduce(torch.Tensor.add, terms) if terms else inner_state[o_r]
         return new_inner_state
 
