@@ -166,10 +166,10 @@ cd UniGAD
 为了不让这个项目的依赖和你电脑上其他软件冲突，我们需要创建一个**独立的虚拟环境**。
 
 ```bash
-conda create -n unigad python=3.9
+conda create -n unigad python=3.10
 ```
 
-> 这条命令创建了一个名为 `unigad`、使用 Python 3.9 的虚拟环境。  
+> 这条命令创建了一个名为 `unigad`、使用 Python 3.10 的虚拟环境。  
 > 途中会询问 `Proceed ([y]/n)?`，输入 `y` 然后按回车。
 
 创建完成后，**激活这个环境**：
@@ -197,7 +197,7 @@ pip install torch==2.2.1 torchvision torchaudio --index-url https://download.pyt
 **安装 DGL（CPU 版本）：**
 
 ```bash
-pip install dgl==2.3.0 -f https://data.dgl.ai/wheels/repo.html
+pip install dgl==2.2.1 -f https://data.dgl.ai/wheels/torch-2.2/cpu/repo.html
 ```
 
 ### 如果你的电脑**有 NVIDIA 独立显卡**（GPU，推荐）：
@@ -213,7 +213,7 @@ pip install torch==2.2.1 torchvision torchaudio --index-url https://download.pyt
 **安装 DGL（CUDA 11.8 版本）：**
 
 ```bash
-pip install dgl==2.3.0 -f https://data.dgl.ai/wheels/cu118/repo.html
+pip install dgl==2.2.1 -f https://data.dgl.ai/wheels/torch-2.2/cu118/repo.html
 ```
 
 ### 验证 PyTorch 安装是否成功：
