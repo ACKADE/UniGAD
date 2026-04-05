@@ -422,26 +422,28 @@ mkdir ..\results
 
 ---
 
-### ❌ 错误：启动时报 `ImportError` 或 `ModuleNotFoundError`（位于 `main.py` 第 11 行 `from utils import *`）
+### ❌ 错误：启动时报 `ImportError` 或 `ModuleNotFoundError`（位于 `main.py` 第 10 或 11 行）
 
-**错误完整信息示例：**
+**错误完整信息示例（旧版本代码）：**
 ```
 File "...\main.py", line 11, in <module>
-  from utils import *
+  from pretrain_models import *
   ...
 ModuleNotFoundError: No module named 'line_profiler'
 ```
 
-**原因：** `line_profiler` 等依赖包未正确安装，或安装的版本与代码不兼容。  
-**解决：** 确保按以下顺序安装依赖（先 conda 后 pip），且版本号严格匹配：
+**原因：** `line_profiler` 是性能分析用的可选包。现在版本的代码已自动处理此情况——即使未安装 `line_profiler`，程序也能正常运行（仅不提供性能分析功能）。
+
+如果你看到此错误，说明代码版本较旧。请先更新代码：
 
 ```bash
-conda install -c conda-forge matplotlib=3.9.1 contourpy line_profiler=4.1.3 numba=0.60.0 -y
-pip install -r requirements.txt
+git pull
 ```
 
-如果仍然失败，尝试单独安装 `line_profiler`：
+如果仍然需要 `line_profiler`（用于性能分析），可选择安装：
 ```bash
+conda install -c conda-forge line_profiler=4.1.3 -y
+# 或
 pip install line_profiler==4.1.3
 ```
 
