@@ -193,7 +193,7 @@ python -c "import torch; print(torch.__version__)"
 确保已激活 `unigad` 环境（命令行左边显示 `(unigad)`），然后执行：
 
 ```bash
-conda install -c conda-forge matplotlib=3.9.1 contourpy line_profiler numba -y
+conda install -c conda-forge matplotlib=3.9.1 contourpy line_profiler=4.1.3 numba=0.60.0 -y
 ```
 
 > 这条命令会从 conda-forge 频道下载预编译好的二进制包，**不需要任何 C 编译器**。安装过程可能需要几分钟，请耐心等待。
@@ -254,6 +254,14 @@ mkdir ..\results
 
 ### 3. 运行 weibo 数据集上的实验（推荐新手从这里开始）
 
+**没有 GPU（CPU 运行）：**
+
+```bash
+python main.py --datasets 1 --pretrain_model graphmae --kernels bwgnn,gcn --lr 5e-4 --save_model --epoch_pretrain 50 --batch_size 1 --khop 1 --epoch_ft 300 --lr_ft 0.003 --final_mlp_layers 3 --cross_modes ne2ne,n2ne,e2ne --metric AUROC --trials 5 --device cpu
+```
+
+**有 GPU（CUDA 运行）：**
+
 ```bash
 python main.py --datasets 1 --pretrain_model graphmae --kernels bwgnn,gcn --lr 5e-4 --save_model --epoch_pretrain 50 --batch_size 1 --khop 1 --epoch_ft 300 --lr_ft 0.003 --final_mlp_layers 3 --cross_modes ne2ne,n2ne,e2ne --metric AUROC --trials 5
 ```
@@ -286,7 +294,7 @@ training...
 
 ### 5. 查看结果
 
-实验完成后，结果会保存在 `results/` 文件夹下，是一个 `.csv` 格式的文件，可以用 Excel 打开查看。
+实验完成后，结果会保存在 `results/` 文件夹下，是一个 `.xlsx` 格式的文件，可以用 Excel 直接打开查看。
 
 ---
 
@@ -414,6 +422,31 @@ mkdir ..\results
 
 ---
 
+### ❌ 错误：启动时报 `ImportError` 或 `ModuleNotFoundError`（位于 `main.py` 第 11 行 `from utils import *`）
+
+**错误完整信息示例：**
+```
+File "...\main.py", line 11, in <module>
+  from utils import *
+  ...
+ModuleNotFoundError: No module named 'line_profiler'
+```
+
+**原因：** `line_profiler` 等依赖包未正确安装，或安装的版本与代码不兼容。  
+**解决：** 确保按以下顺序安装依赖（先 conda 后 pip），且版本号严格匹配：
+
+```bash
+conda install -c conda-forge matplotlib=3.9.1 contourpy line_profiler=4.1.3 numba=0.60.0 -y
+pip install -r requirements.txt
+```
+
+如果仍然失败，尝试单独安装 `line_profiler`：
+```bash
+pip install line_profiler==4.1.3
+```
+
+---
+
 ## 12. 如果你有 GPU（进阶，可选）
 
 如果你的电脑有 NVIDIA 独立显卡（如 RTX 3060、RTX 4070 等），使用 GPU 可以大幅提升训练速度。
@@ -453,7 +486,8 @@ python -c "import torch; print('GPU可用:', torch.cuda.is_available())"
 1. 打开 Anaconda Prompt
 2. conda activate unigad               # 激活环境
 3. cd Desktop\UniGAD\src               # 进入项目的 src 目录
-4. python main.py --datasets 1 ...     # 运行实验
+4. python main.py --datasets 1 --device cpu ...     # 运行实验（CPU）
+   python main.py --datasets 1 ...                  # 运行实验（GPU）
 ```
 
 ---
