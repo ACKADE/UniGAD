@@ -10,7 +10,11 @@ import dgl
 from dgl.data.utils import load_graphs
 from dgl.nn.pytorch.glob import SumPooling, AvgPooling, MaxPooling
 from dgl.dataloading import GraphDataLoader
-from dgl import KHopGraph, save_graphs
+try:
+    from dgl import KHopGraph, save_graphs
+except ImportError:
+    from dgl.transforms import KHopGraph
+    from dgl.data.utils import save_graphs
 import dgl.function as fn
 
 import torch
@@ -19,7 +23,11 @@ import numpy as np
 import torch.nn.functional as F
 from functools import partial
 
-from line_profiler import profile
+try:
+    from line_profiler import profile
+except ImportError:
+    def profile(func):
+        return func
 
 NAME_MAP = {
     'n': "Node",
