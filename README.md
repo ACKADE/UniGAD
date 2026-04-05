@@ -136,23 +136,6 @@ conda activate unigad
 ---
 
 ## 7. 第六步：安装 PyTorch 和 DGL
-
-PyTorch 和 DGL 是这个项目最核心的两个库。安装时需要选择适合你电脑的版本。
-
-### 如果你的电脑**没有独立显卡**（或不确定）：
-
-**安装 PyTorch（CPU 版本）：**
-
-```bash
-pip install torch==2.2.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-```
-
-**安装 DGL（CPU 版本）：**
-
-```bash
-pip install dgl==2.2.1 -f https://data.dgl.ai/wheels/torch-2.2/cpu/repo.html
-```
-
 ### 如果你的电脑**有 NVIDIA 独立显卡**（GPU，推荐）：
 
 > 先确认你的 CUDA 版本：在命令行输入 `nvidia-smi`，看 **"CUDA Version"** 那一列的数字。
@@ -180,14 +163,6 @@ python -c "import torch; print(torch.__version__)"
 ---
 
 ## 8. 第七步：安装其余依赖包
-
-> ⚠️ **Windows 特别说明（重要！）**  
-> `requirements.txt` 中部分包（如 `matplotlib`、`contourpy`、`line_profiler`）在 Windows 上需要 C 编译器才能从源码构建。如果你的电脑没有安装 Visual Studio 或 MinGW，直接运行 `pip install -r requirements.txt` 会报如下错误：  
-> ```
-> ERROR: Unknown compiler(s): [['icl'], ['cl'], ['cc'], ['gcc'], ...]
-> ```  
-> **解决方案：** 先用 conda 安装这些编译型依赖（conda 提供预编译的二进制包），再用 pip 安装其余依赖。
-
 ### 第 1 步：用 conda 安装需要编译的包
 
 确保已激活 `unigad` 环境（命令行左边显示 `(unigad)`），然后执行：
@@ -201,10 +176,11 @@ conda install -c conda-forge matplotlib=3.9.1 contourpy line_profiler=4.1.3 numb
 ### 第 2 步：用 pip 安装其余依赖
 
 确保你在 `UniGAD` 项目文件夹下（不确定的话，重新执行 `cd Desktop\UniGAD`），然后运行：
-
+先执行这个
 ```bash
 pip install -r requirements.txt
 ```
+再执行这个
 ```bash
 pip install torchdata==0.7.1 --extra-index-url https://download.pytorch.org/whl/cu118
 ```
@@ -215,7 +191,7 @@ pip install torchdata==0.7.1 --extra-index-url https://download.pytorch.org/whl/
 
 ---
 
-## 9. 第八步：下载数据集
+## 9. 第八步：下载数据集(可以直接跳过这一步,进行下一步,我没执行这一步)
 
 这个项目使用多种数据集。这里以 **weibo** 数据集为例（已包含在仓库中），以及如何下载 **T-Group** 数据集。
 
@@ -260,12 +236,6 @@ mkdir ..\results
 
 ```bash
 python main.py --datasets 1 --pretrain_model graphmae --kernels bwgnn,gcn --lr 5e-4 --save_model --epoch_pretrain 50 --batch_size 1 --khop 1 --epoch_ft 300 --lr_ft 0.003 --final_mlp_layers 3 --cross_modes ne2ne,n2ne,e2ne --metric AUROC --trials 5 --device cpu
-```
-
-**有 GPU（CUDA 运行）：**
-
-```bash
-python main.py --datasets 1 --pretrain_model graphmae --kernels bwgnn,gcn --lr 5e-4 --save_model --epoch_pretrain 50 --batch_size 1 --khop 1 --epoch_ft 300 --lr_ft 0.003 --final_mlp_layers 3 --cross_modes ne2ne,n2ne,e2ne --metric AUROC --trials 5
 ```
 
 > **各参数说明：**
