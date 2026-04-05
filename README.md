@@ -320,6 +320,52 @@ training...
 
 ## 11. 常见错误与解决方法
 
+### ❌ 错误：`SSL certificate problem: unable to get local issuer certificate`
+
+**错误完整信息示例：**
+```
+fatal: unable to access 'https://github.com/ACKADE/UniGAD.git/': SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)
+```
+
+**原因：** 你的电脑上 Git 使用的 SSL 证书库无法验证 GitHub 的 HTTPS 证书，常见于企业网络、学校网络或国内特定网络环境。
+
+**解决方法（任选其一）：**
+
+**方法一：临时禁用 Git 的 SSL 验证（最简单）**
+
+> ⚠️ 此方法会降低安全性，仅建议在可信网络环境中使用，克隆完成后建议恢复设置。
+
+```bash
+git config --global http.sslVerify false
+git clone https://github.com/ACKADE/UniGAD.git
+```
+
+克隆完成后，恢复 SSL 验证：
+```bash
+git config --global http.sslVerify true
+```
+
+**方法二：更新系统 CA 证书（推荐）**
+
+- **Windows 用户：** 打开"控制面板" → "Windows Update"，安装所有可用更新，或访问 https://curl.se/docs/caextract.html 下载最新的 `cacert.pem`，然后执行：
+  ```bash
+  git config --global http.sslCAInfo "C:/path/to/cacert.pem"
+  ```
+- **macOS 用户：**
+  ```bash
+  brew install ca-certificates
+  ```
+- **Linux（Ubuntu）用户：**
+  ```bash
+  sudo apt update && sudo apt install --reinstall ca-certificates
+  ```
+
+**方法三：使用 VPN 或代理**
+
+如果你处于企业/学校内网，使用 VPN 切换到正常网络环境后重试。
+
+---
+
 ### ❌ 错误：`conda: command not found`
 
 **原因：** Anaconda 没有正确添加到系统路径。  
