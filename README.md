@@ -197,7 +197,7 @@ pip install torch==2.2.1 torchvision torchaudio --index-url https://download.pyt
 **安装 DGL（CPU 版本）：**
 
 ```bash
-pip install dgl -f https://data.dgl.ai/wheels/repo.html
+pip install dgl==2.3.0 -f https://data.dgl.ai/wheels/repo.html
 ```
 
 ### 如果你的电脑**有 NVIDIA 独立显卡**（GPU，推荐）：
@@ -213,7 +213,7 @@ pip install torch==2.2.1 torchvision torchaudio --index-url https://download.pyt
 **安装 DGL（CUDA 11.8 版本）：**
 
 ```bash
-pip install dgl -f https://data.dgl.ai/wheels/cu118/repo.html
+pip install dgl==2.3.0 -f https://data.dgl.ai/wheels/cu118/repo.html
 ```
 
 ### 验证 PyTorch 安装是否成功：
@@ -235,6 +235,7 @@ pip install -r requirements.txt
 ```
 
 > 这条命令会自动安装项目所需的所有其他依赖库。安装过程较长（可能需要 5-20 分钟），请耐心等待。  
+> **注意：** PyTorch 和 DGL 已在上一步单独安装，`requirements.txt` 不包含它们，请勿重复安装。  
 > 安装过程中可能会看到一些黄色的警告信息（WARNING），这通常不影响使用，可以忽略。  
 > 如果出现红色的错误（ERROR），请见[常见错误与解决方法](#11-常见错误与解决方法)。
 
@@ -378,7 +379,8 @@ mkdir ../results
 **解决方法：** 跳过 requirements.txt 中版本冲突的包，单独安装核心包：
 
 ```bash
-pip install numpy pandas scikit-learn scipy matplotlib tqdm networkx catboost torch_geometric
+pip install numpy pandas scikit-learn scipy matplotlib tqdm networkx catboost
+pip install torch_geometric==2.5.3
 ```
 
 ---
